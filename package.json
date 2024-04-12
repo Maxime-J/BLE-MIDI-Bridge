@@ -8,8 +8,8 @@
     "start": "electron app",
     "build-parser": "rollup -c rollup.config.parser.mjs",
     "build-material": "rollup -c rollup.config.material.mjs",
-    "download-assets": "node assets.js",
-    "create-bundles": "node electron-packaging.js"
+    "download-assets": "node scripts/assets.js",
+    "create-bundles": "node scripts/electron-packaging.js"
   },
   "author": "Maxime Jeunot",
   "license": "AGPL-3.0-or-later",

@@ -2,7 +2,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 
 const config = {
-  input: 'material-web.js',
+  input: 'lib/material-web.js',
   output: {
     file: 'app/material.js'
   },

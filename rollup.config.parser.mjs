@@ -1,7 +1,7 @@
 import terser from '@rollup/plugin-terser';
 
 const config = {
-  input: 'parser/parser.js',
+  input: 'lib/parser/parser.js',
   output: {
     file: 'app/parser.js',
     format: 'umd',
