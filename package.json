@@ -1,0 +1,29 @@
+{
+  "name": "ble-midi-bridge",
+  "productName": "BLE-MIDI Bridge",
+  "version": "1.0.0",
+  "description": "Connect one or multiple BLE-MIDI devices to a MIDI port.",
+  "private": true,
+  "scripts": {
+    "start": "electron app",
+    "build-parser": "rollup -c rollup.config.parser.mjs",
+    "build-material": "rollup -c rollup.config.material.mjs",
+    "download-assets": "node assets.js",
+    "create-bundles": "node electron-packaging.js"
+  },
+  "author": "Maxime Jeunot",
+  "license": "AGPL-3.0-or-later",
+  "packageManager": "yarn@4.1.1",
+  "devDependencies": {
+    "@electron/asar": "^3.2.9",
+    "@electron/packager": "^18.3.2",
+    "@material/web": "^1.4.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "electron": "^29.2.0",
+    "rollup": "^4.14.1"
+  },
+  "resolutions": {
+    "@material/web": "patch:@material/web@npm%3A1.4.0#~/.yarn/patches/@material-web-npm-1.4.0-fd01e297fe.patch"
+  }
+}

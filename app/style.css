@@ -1,0 +1,69 @@
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(assets/noto-sans-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(assets/noto-sans-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root,:host{--md-sys-color-background:#f7f9ff;--md-sys-color-on-background:#181c20;--md-sys-color-surface:#f7f9ff;--md-sys-color-surface-dim:#d7dae0;--md-sys-color-surface-bright:#f7f9ff;--md-sys-color-surface-container-lowest:#ffffff;--md-sys-color-surface-container-low:#f1f4f9;--md-sys-color-surface-container:#ebeef3;--md-sys-color-surface-container-high:#e6e8ee;--md-sys-color-surface-container-highest:#e0e2e8;--md-sys-color-on-surface:#181c20;--md-sys-color-surface-variant:#dbe3ee;--md-sys-color-on-surface-variant:#404850;--md-sys-color-inverse-surface:#2d3135;--md-sys-color-inverse-on-surface:#eef1f6;--md-sys-color-outline:#707881;--md-sys-color-outline-variant:#bfc7d1;--md-sys-color-shadow:#000000;--md-sys-color-scrim:#000000;--md-sys-color-surface-tint:#006398;--md-sys-color-primary:#006398;--md-sys-color-on-primary:#ffffff;--md-sys-color-primary-container:#61b6f8;--md-sys-color-on-primary-container:#00263e;--md-sys-color-inverse-primary:#93ccff;--md-sys-color-secondary:#45617a;--md-sys-color-on-secondary:#ffffff;--md-sys-color-secondary-container:#cae4ff;--md-sys-color-on-secondary-container:#2d4a62;--md-sys-color-tertiary:#814794;--md-sys-color-on-tertiary:#ffffff;--md-sys-color-tertiary-container:#d796ea;--md-sys-color-on-tertiary-container:#3e0053;--md-sys-color-error:#ba1a1a;--md-sys-color-on-error:#ffffff;--md-sys-color-error-container:#ffdad6;--md-sys-color-on-error-container:#410002;}
+
+:root {
+  --md-ref-typeface-plain: 'Noto Sans';
+  --md-dialog-headline-font: var(--md-ref-typeface-plain);
+  --md-dialog-headline-size: 20px;
+  --md-list-container-color: none;
+  --scrollbar-width: 4px;
+  --scrollbar-thumb-color: var(--md-sys-color-outline-variant);
+  --menu-max-height: 184px;
+}
+
+body {
+  background-color: var(--md-sys-color-background);
+}
+
+#midi-output {
+  width: 100%;
+  background-color: var(--md-sys-color-surface-container);
+}
+
+#connected-devices span, md-dialog [slot="headline"] {
+  user-select: none;
+}
+
+#connected-devices img:hover {
+  cursor: pointer;
+}
+
+#connected-devices {
+  height: calc(100vh - 136px);
+  overflow-y: auto;
+}
+
+#add-device {
+  width: 100%;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  --md-fab-container-shape: 0;
+}
+
+md-dialog md-linear-progress {
+  width: 100%;
+}
+
+#connected-devices md-list-item.connected md-linear-progress, #connected-devices md-list-item:not(.connected) img {
+  display: none;
+}

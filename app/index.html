@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+    <title>BLE-MIDI Bridge</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="material.js"></script>
+    <script src="parser.js"></script>
+    <script src="renderer.js"></script>
+  </head>
+  <body>
+    <md-outlined-select label="MIDI output" id="midi-output"></md-outlined-select>
+    <md-list id="connected-devices"></md-list>
+    <md-fab lowered label="Add device" id="add-device"><img slot="icon" src="assets/add.svg"/></md-fab>
+    <md-dialog id="devices-dialog">
+      <div slot="headline">Select device</div>
+      <md-list slot="content"></md-list>
+      <div slot="actions">
+        <md-linear-progress indeterminate></md-linear-progress>
+      </div>
+    </md-dialog>
+  </body>
+</html>
