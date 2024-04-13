@@ -52,8 +52,6 @@ const createWindow = () => {
   ipcMain.on('close-window', () => {
     mainWindow.close();
   });
-
-  //mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {
