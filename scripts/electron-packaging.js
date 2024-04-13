@@ -2,10 +2,10 @@ const path = require('node:path');
 const fs = require('node:fs');
 const asar = require('@electron/asar');
 const packager = require('@electron/packager');
-const { author } = require('./package.json');
+const { author } = require('../package.json');
 
-const dest = './bundles';
-const aboutFile = './about.txt';
+const dest = 'bundles';
+const aboutFile = 'about.txt';
 
 if (!fs.existsSync(dest)) {
   fs.mkdirSync(dest);

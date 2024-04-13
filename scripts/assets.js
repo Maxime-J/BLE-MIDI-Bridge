@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const https = require('node:https');
 const { pipeline } = require('node:stream');
 
-const dest = './app/assets';
+const dest = 'app/assets';
 
 if (!fs.existsSync(dest)) {
   fs.mkdirSync(dest);
