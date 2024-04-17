@@ -17,13 +17,13 @@
   "devDependencies": {
     "@electron/asar": "^3.2.9",
     "@electron/packager": "^18.3.2",
-    "@material/web": "^1.4.0",
+    "@material/web": "^1.4.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
-    "electron": "^29.2.0",
-    "rollup": "^4.14.1"
+    "electron": "^29.3.0",
+    "rollup": "^4.14.3"
   },
   "resolutions": {
-    "@material/web": "patch:@material/web@npm%3A1.4.0#~/.yarn/patches/@material-web-npm-1.4.0-fd01e297fe.patch"
+    "@material/web": "patch:@material/web@npm%3A1.4.1#~/.yarn/patches/@material-web-npm-1.4.1-610cfb51a4.patch"
   }
 }
