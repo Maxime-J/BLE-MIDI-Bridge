@@ -28,7 +28,7 @@ LoopMIDI can be used https://www.tobias-erichsen.de/software/loopmidi.html
 
 ## Context
 macOS has a top notch MIDI support, and BLE-MIDI is natively supported.\
-Most Linux distributions doesn't support BLE-MIDI by default, but bluez can be recompiled to enable it.
+Most Linux distributions don't support BLE-MIDI by default, but bluez can be recompiled to enable it.
 
 Windows is another thing, BLE-MIDI is supported only through UWP, which leaves out the majority of music softwares.
 
