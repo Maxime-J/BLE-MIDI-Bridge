@@ -1,0 +1,50 @@
+name: Release
+run-name: Create release
+on: workflow_dispatch
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_FILE: ble-midi-bridge-windows-x64.zip
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Download assets
+        run: yarn download-assets
+
+      - name: Bundle libs
+        run: |
+          yarn build-material
+          yarn build-parser
+
+      - name: Bundle app
+        run: |
+          yarn create-bundles
+          cd bundles
+          mv 'BLE-MIDI Bridge-win32-x64' 'BLE-MIDI Bridge'
+          zip -r -q $RELEASE_FILE 'BLE-MIDI Bridge'
+
+      - name: Get package version
+        run: echo "RELEASE_VERSION=v$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create $RELEASE_VERSION bundles/$RELEASE_FILE --generate-notes --draft
