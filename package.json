@@ -2,7 +2,7 @@
   "name": "ble-midi-bridge",
   "productName": "BLE-MIDI Bridge",
   "version": "1.0.0",
-  "description": "Connect one or multiple BLE-MIDI devices to a MIDI port.",
+  "description": "Connect BLE-MIDI device(s) to a MIDI port.",
   "private": true,
   "scripts": {
     "start": "electron app",
