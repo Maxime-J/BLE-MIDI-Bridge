@@ -12,7 +12,7 @@
     "create-bundles": "node scripts/electron-packaging.js"
   },
   "author": "Maxime Jeunot",
-  "license": "AGPL-3.0-or-later",
+  "license": "GPL-3.0-or-later",
   "packageManager": "yarn@4.1.1",
   "devDependencies": {
     "@electron/asar": "^3.2.9",
