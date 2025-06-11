@@ -50,10 +50,8 @@ function download(url, file) {
 
 
 (async function(){
-  for (const asset of assets) {
+  for (const [url, file] of assets) {
     try {
-      const url = asset[0];
-      const file = asset[1];
       await download(url, file);
     } catch (err) {
       throw err;
