@@ -67,3 +67,15 @@ md-dialog md-linear-progress {
 #connected-devices md-list-item.connected md-linear-progress, #connected-devices md-list-item:not(.connected) img {
   display: none;
 }
+
+#last-setup {
+  margin-top: 10px;
+}
+
+#last-setup > span {
+  display: block;
+}
+
+#last-setup > span span {
+  font-weight: 600;
+}

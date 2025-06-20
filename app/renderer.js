@@ -36,7 +36,7 @@ function midiHandler(){
     }
   };
 
-  const init = async () => {
+  const init = async (portName) => {
     selectDOM = document.getElementById('midi-output');
     selectDOM.addEventListener('change', onChange);
 
@@ -45,6 +45,14 @@ function midiHandler(){
       portHandler({ port: output });
     });
     midiAccess.onstatechange = portHandler;
+
+    if (portName) {
+      const index = selectDOM.options.findIndex((option) => option.textContent === portName);
+      setTimeout(() => {
+        selectDOM.selectIndex(index);
+        selectDOM.dispatchEvent(new Event('change'));
+      }, 0);
+    }
   };
 
   const exported = {
@@ -66,26 +74,16 @@ function bleHandler(){
 
   let devicesDialog, availableList, selectedId, connectedList;
 
-  const errorHandler = () => {
-    if (devicesDialog.open) {
-      devicesDialog.close();
-    } else {
-      if (devices[selectedId].gatt.connected) {
-        devices[selectedId].gatt.disconnect();
-      } else {
-        connectedList.querySelector('md-list-item:not(.connected)').remove();
-        delete devices[selectedId];
-      }
-    }
-  };
-
-  const connect = async () => {
+  const connect = async (resolveSelection) => {
     try {
       const device = await navigator.bluetooth.requestDevice({
         filters: [
           { services: [MIDI_SERVICE_UUID] }
         ]
       });
+
+      if (resolveSelection) resolveSelection();
+
       const permanentId = selectedId;
       devices[permanentId] = device;
       const deviceDOM = document.createElement('md-list-item');
@@ -114,16 +112,35 @@ function bleHandler(){
       deviceDOM.classList.add('connected');
       deviceDOM.querySelector('img').addEventListener('click', () => {device.gatt.disconnect();});
     } catch {
-      errorHandler();
+      if (!devices[selectedId]) {
+        if (devicesDialog.open) devicesDialog.close();
+        if (resolveSelection) resolveSelection();
+      } else {
+        if (devices[selectedId].gatt.connected) {
+          devices[selectedId].gatt.disconnect();
+        } else {
+          connectedList.querySelector('md-list-item:not(.connected)').remove();
+          delete devices[selectedId];
+        }
+      }
     }
   };
 
   const disconnectAll = async () => {
+    const disconnected = {
+      ids: [],
+      names: [],
+    };
+
     for (const id in devices) {
       const device = devices[id];
       device.ongattserverdisconnected = null;
       await device.gatt.disconnect();
+      disconnected.ids.push(device.id);
+      disconnected.names.push(device.name);
     }
+
+    return disconnected;
   };
 
   const selectDevice = ({ target }) => {
@@ -152,15 +169,49 @@ function bleHandler(){
 
   const handleMessage = (message, timestamp) => midi.output.send(message, timestamp);
 
-  const init = () => {
+  const init = (devicesIds) => {
     devicesDialog = document.getElementById('devices-dialog');
     availableList = devicesDialog.querySelector('md-list');
     connectedList = document.getElementById('connected-devices');
 
+    if (devicesIds) {
+      let lookupId;
+      const connectPromises = [];
+
+      electron.onBleDevices((devicesAvailable) => {
+        const lookupFound = devicesAvailable.some(({ deviceId }) => deviceId === lookupId);
+        if (lookupFound) {
+          selectedId = lookupId;
+          electron.selectBleDevice(lookupId);
+        }
+      });
+
+      // bluetooth.requestDevice requires transient activation, which remains for 5s in Chromium:
+      // https://source.chromium.org/chromium/chromium/src/+/refs/tags/136.0.7103.149:third_party/blink/public/common/frame/user_activation_state.h;l=23
+      //
+      // It should be enough to discover and select all devices.
+      // Note that a tricky workaround would be possible with Electron API.
+
+      while (devicesIds.length > 0 && navigator.userActivation.isActive) {
+        lookupId = devicesIds.shift();
+
+        const lookupTimeout = setTimeout(electron.cancelBluetooth, 2500)
+
+        await new Promise((res) => {
+          connectPromises.push(connect(res));
+        });
+
+        clearTimeout(lookupTimeout);
+      }
+
+      electron.resetOnBleDevices();
+      await Promise.all(connectPromises);
+    }
+
     electron.onBleDevices(handleDevices);
     availableList.addEventListener('click', selectDevice);
 
-    devicesDialog.addEventListener('opened', connect);
+    devicesDialog.addEventListener('opened', () => connect());
     devicesDialog.addEventListener('cancel', (e) => {
       e.preventDefault();
       electron.cancelBluetooth();
@@ -179,14 +230,83 @@ function bleHandler(){
   };
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function exitHandler() {
+  const output = midi.output.name;
+  await midi.clear();
+
+  const devices = await ble.disconnectAll();
+
+  if (devices.ids.length > 0) {
+    localStorage.setItem('setup', JSON.stringify({ output, devices }));
+  }
+}
+
+function restore() {
+  return new Promise((res, rej) => {
+    const setup = localStorage.getItem('setup');
+
+    if (setup === null) {
+      rej();
+      return;
+    }
+
+    const { output, devices } = JSON.parse(setup);
+
+    let setupHTML = '';
+    if (output) setupHTML += `<span><span>Output</span>: ${output}</span>`;
+    setupHTML += `<span><span>${(devices.names.length > 1) ? 'Devices' : 'Device'}</span>: ${devices.names.join(', ')}</span>`;
+
+    const restoreDialog = document.createElement('md-dialog');
+    const restoreButton = document.createElement('md-text-button');
+    const discardButton = document.createElement('md-text-button');
+
+    restoreDialog.setAttribute('quick', '');
+    restoreDialog.setAttribute('open', '');
+    restoreDialog.innerHTML = `<div slot="content">Restore last used setup?<div id="last-setup">${setupHTML}</div></div><div slot="actions"></div>`;
+
+    restoreButton.textContent = 'Restore';
+    discardButton.textContent = 'Discard';
+
+    const exitRestore = () => {
+      restoreDialog.remove();
+      localStorage.removeItem('setup');
+    };
+
+    discardButton.addEventListener('click', () => {
+      rej();
+      exitRestore();
+    }, { once: true });
+
+    restoreButton.addEventListener('click', async () => {
+      res();
+      restoreDialog.lastChild.innerHTML = '<md-linear-progress indeterminate></md-linear-progress>';
+      midi.init(output);
+      await ble.init(devices.ids);
+      exitRestore();
+    }, { once: true });
+
+    // Prevent native dialog focus on first button
+    restoreDialog.addEventListener('opened', () => {
+      restoreDialog.lastChild.append(discardButton, restoreButton);
+    });
+
+    restoreDialog.addEventListener('cancel', (e) => e.preventDefault());
+
+    document.body.appendChild(restoreDialog);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
   window.midi = midiHandler();
   window.ble = bleHandler();
-  midi.init();
-  ble.init();
+
+  restore().catch(() => {
+    midi.init();
+    ble.init();
+  });
 })
 
 window.addEventListener('beforeunload', (e) => {
   e.returnValue = false;
-  Promise.all([midi.clear(), ble.disconnectAll()]).then(electron.closeWindow);
+  exitHandler().then(electron.closeWindow);
 }, {once: true});
