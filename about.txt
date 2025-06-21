@@ -1,6 +1,6 @@
 BLE-MIDI Bridge is open source (https://github.com/Maxime-J/BLE-MIDI-Bridge) and licensed under GPL v3.
 
-  Copyright (C) 2024 Maxime Jeunot
+  Copyright (C) 2024-2025 Maxime Jeunot
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by

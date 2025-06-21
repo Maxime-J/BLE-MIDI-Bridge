@@ -21,7 +21,7 @@ if (!fs.existsSync(dest)) {
     out: dest,
     platform: 'win32',
     arch: 'x64',
-    appCopyright: `Copyright (C) 2024 ${author}`
+    appCopyright: `Copyright (C) 2024-2025 ${author}`
   });
 
   for (const bundle of bundles) {
