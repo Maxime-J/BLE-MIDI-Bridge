@@ -19,8 +19,8 @@
     "@material/web": "^2.3.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
-    "electron": "^36.4.0",
-    "rollup": "^4.43.0"
+    "electron": "^36.5.0",
+    "rollup": "^4.44.0"
   },
   "resolutions": {
     "@material/web": "patch:@material/web@npm%3A2.3.0#~/.yarn/patches/@material-web-npm-2.3.0-e634be95cf.patch"
