@@ -6,7 +6,7 @@ In other terms, it's a way to use Bluetooth MIDI devices with any DAW or virtual
 It's a one way communication, SysEx excluded, and it relies on web APIs, using Electron framework.
 
 Download: [Windows only](https://github.com/Maxime-J/BLE-MIDI-Bridge/releases/latest/download/ble-midi-bridge-windows-x64.zip)\
-(It could be bundled for other OSs but it shouldn't be needed, see Context below)
+(Other OSs shouldn't be needed, see Context below)
 
 ## Usage
 Pretty self-explanatory:
@@ -19,8 +19,8 @@ No system coupling needed.\
 No specific order to follow.
 
 MIDI port can be freely changed.\
-Devices are removed if disconnected, and the disconnection can be triggered from the app.\
-Closing the app properly disconnect all devices.
+Devices can be disconnected at any time, either from the app or from device.\
+Closing the app properly disconnects all devices and saves the current setup for later use.
 
 ## Prerequisite
 loopMIDI (or any other virtual loopback MIDI system) is most likely needed:\
@@ -39,17 +39,15 @@ Some solutions exist though:\
 -MidiListUWP.
 
 But in my experience, either it was:\
-not fully working or not working at all, limited to one device in free version, not straightforward to use.\
+not fully working or not working at all, not efficient in terms of latency, limited to one device in free version, not straightforward to use.\
 I'd like to mention FlexiBLE MIDI too, a tool which gave me the concept idea, but very limited in terms of BLE-MIDI/MIDI implementation.
 
-BLE-MIDI Bridge is a working alternative, with different limitations and advantages.
+BLE-MIDI Bridge is a working simple and performant alternative, with different limitations and advantages.
 
 ## About timing
 The first MIDI message of a received packet is sent as soon as possible\
 and the eventual following ones are sent respecting the timestamps.
 
-## Libraries used
-Google Material Web, slightly modified for styling needs (see patch in .yarn folder).
-
-BLE-MIDI parser was written inspired by skratchdot ble-midi library,\
-with performance in mind, fixed unhandled timestamp situation and better MIDI support.
+## MIDI references
+[BLE-MIDI specification](https://drive.google.com/file/d/15jF6H78kMS0jEBQ7JpH0W6MHf_yxoE5r/view?usp=drive_link)\
+[MIDI Status bytes list](https://midi.org/expanded-midi-1-0-messages-list)
