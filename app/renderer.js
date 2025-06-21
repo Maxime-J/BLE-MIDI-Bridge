@@ -1,19 +1,15 @@
-function midiHandler(){
-  let midiAccess, midiOutput, outputIds = [], selectDOM;
+function midiHandler() {
+  let midiAccess, midiOutput, selectDOM;
 
-  const clear = async () => {
-    if (midiOutput) {
-      await midiOutput.close();
-    }
-  };
+  const outputIds = [];
 
   const onChange = async () => {
     if (selectDOM.value !== '') {
-      await clear();
+      if (midiOutput) await midiOutput.close();
       const outputId = selectDOM.value;
       midiOutput = midiAccess.outputs.get(outputId);
       await midiOutput.open();
-      exported.output = midiOutput;
+      bridge.setOutput(midiOutput);
     }
   };
 
@@ -41,7 +37,7 @@ function midiHandler(){
     selectDOM.addEventListener('change', onChange);
 
     midiAccess = await navigator.requestMIDIAccess();
-    midiAccess.outputs.forEach(output => {
+    midiAccess.outputs.forEach((output) => {
       portHandler({ port: output });
     });
     midiAccess.onstatechange = portHandler;
@@ -55,24 +51,27 @@ function midiHandler(){
     }
   };
 
-  const exported = {
-    init,
-    output: { send: () => undefined },
-    clear
-  };
+  const exit = async () => {
+    if (midiOutput) {
+      await midiOutput.close();
+      return midiOutput.name;
+    }
+  }
 
-  return exported;
+  return {
+    init,
+    exit
+  };
 }
 
-function bleHandler(){
+function bleHandler() {
   const MIDI_SERVICE_UUID = '03b80e5a-ede8-4b33-a751-6ce34ec4c700';
   const MIDI_IO_CHARACTERISTIC_UUID = '7772e5db-3868-4112-a1a9-f2669d106bf3';
-  const { parse, setMessageHandler } = Parser();
-
-  const devices = {};
-  let availableIds = [];
 
   let devicesDialog, availableList, selectedId, connectedList;
+
+  const devices = {};
+  const availableIds = [];
 
   const connect = async (resolveSelection) => {
     try {
@@ -86,31 +85,32 @@ function bleHandler(){
 
       const permanentId = selectedId;
       devices[permanentId] = device;
+
       const deviceDOM = document.createElement('md-list-item');
       deviceDOM.innerHTML = `<span>${device.name}</span><md-linear-progress value="0.5"></md-linear-progress><img slot="end" src="assets/close.svg"/>`;
       const progress = deviceDOM.querySelector('md-linear-progress');
       connectedList.appendChild(deviceDOM);
 
-      const removeDevice = () => {
+      device.ongattserverdisconnected = () => {
         deviceDOM.remove();
         delete devices[permanentId];
       };
 
       const server = await device.gatt.connect();
-      device.ongattserverdisconnected = removeDevice;
       progress.value = '0.7';
 
       const service = await server.getPrimaryService(MIDI_SERVICE_UUID);
       progress.value = '0.8';
 
       const characteristic = await service.getCharacteristic(MIDI_IO_CHARACTERISTIC_UUID);
-      characteristic.addEventListener('characteristicvaluechanged', parse);
+      characteristic.addEventListener('characteristicvaluechanged', bridge.handleInput);
       progress.value = '0.9';
 
       await characteristic.startNotifications();
       progress.value = '1';
+
       deviceDOM.classList.add('connected');
-      deviceDOM.querySelector('img').addEventListener('click', () => {device.gatt.disconnect();});
+      deviceDOM.querySelector('img').addEventListener('click', () => device.gatt.disconnect());
     } catch {
       if (!devices[selectedId]) {
         if (devicesDialog.open) devicesDialog.close();
@@ -126,28 +126,11 @@ function bleHandler(){
     }
   };
 
-  const disconnectAll = async () => {
-    const disconnected = {
-      ids: [],
-      names: [],
-    };
-
-    for (const id in devices) {
-      const device = devices[id];
-      device.ongattserverdisconnected = null;
-      await device.gatt.disconnect();
-      disconnected.ids.push(device.id);
-      disconnected.names.push(device.name);
-    }
-
-    return disconnected;
-  };
-
   const selectDevice = ({ target }) => {
     if (target.nodeName === 'MD-LIST-ITEM') {
       selectedId = target.getAttribute('data-id');
       devicesDialog.close();
-      availableIds = [];
+      availableIds.length = 0;
       availableList.innerHTML = '';
       electron.selectBleDevice(selectedId);
     }
@@ -157,19 +140,17 @@ function bleHandler(){
     const excluded = [...availableIds, ...Object.keys(devices)];
     for (const device of devicesAvailable) {
       if (!excluded.includes(device.deviceId)) {
-        availableIds.push(device.deviceId);
         const newDevice = document.createElement('md-list-item');
         newDevice.type = 'button';
-        newDevice.innerText = device.deviceName;
+        newDevice.textContent = device.deviceName;
         newDevice.setAttribute('data-id', device.deviceId);
         availableList.appendChild(newDevice);
+        availableIds.push(device.deviceId);
       }
     }
   };
 
-  const handleMessage = (message, timestamp) => midi.output.send(message, timestamp);
-
-  const init = (devicesIds) => {
+  const init = async (devicesIds) => {
     devicesDialog = document.getElementById('devices-dialog');
     availableList = devicesDialog.querySelector('md-list');
     connectedList = document.getElementById('connected-devices');
@@ -209,9 +190,11 @@ function bleHandler(){
     }
 
     electron.onBleDevices(handleDevices);
+
     availableList.addEventListener('click', selectDevice);
 
     devicesDialog.addEventListener('opened', () => connect());
+
     devicesDialog.addEventListener('cancel', (e) => {
       e.preventDefault();
       electron.cancelBluetooth();
@@ -220,21 +203,34 @@ function bleHandler(){
     document.getElementById('add-device').addEventListener('click', () => {
       devicesDialog.show();
     });
+  };
 
-    setMessageHandler(handleMessage);
+  const exit = () => {
+    const disconnected = {
+      ids: [],
+      names: [],
+    };
+
+    for (const id in devices) {
+      const device = devices[id];
+      device.ongattserverdisconnected = null;
+      device.gatt.disconnect();
+      disconnected.ids.push(id);
+      disconnected.names.push(device.name);
+    }
+
+    return disconnected;
   };
 
   return {
     init,
-    disconnectAll
+    exit
   };
 }
 
 async function exitHandler() {
-  const output = midi.output.name;
-  await midi.clear();
-
-  const devices = await ble.disconnectAll();
+  const output = await midi.exit();
+  const devices = ble.exit();
 
   if (devices.ids.length > 0) {
     localStorage.setItem('setup', JSON.stringify({ output, devices }));

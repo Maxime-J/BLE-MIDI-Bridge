@@ -8,8 +8,8 @@
 node_modules
 
 /app/assets
+/app/bridge.js
 /app/material.js
-/app/parser.js
 
 /bundles
 /data

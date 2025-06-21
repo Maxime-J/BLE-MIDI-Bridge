@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "start": "electron app",
-    "build-parser": "rollup -c rollup.config.parser.mjs",
+    "build-bridge": "rollup -c rollup.config.bridge.mjs",
     "build-material": "rollup -c rollup.config.material.mjs",
     "download-assets": "node scripts/assets.js",
     "create-bundles": "node scripts/electron-packaging.js"
