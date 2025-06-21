@@ -32,7 +32,7 @@ jobs:
       - name: Bundle libs
         run: |
           yarn build-material
-          yarn build-parser
+          yarn build-bridge
 
       - name: Bundle app
         run: |
