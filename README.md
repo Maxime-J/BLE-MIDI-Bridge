@@ -8,6 +8,8 @@ It's a one way communication, SysEx excluded, and it relies on web APIs, using E
 Download: [Windows only](https://github.com/Maxime-J/BLE-MIDI-Bridge/releases/latest/download/ble-midi-bridge-windows-x64.zip)\
 (Other OSs shouldn't be needed, see Context below)
 
+[![Downloads count](https://img.shields.io/github/downloads/Maxime-J/BLE-MIDI-Bridge/total?color=%23006398)](https://github.com/Maxime-J/BLE-MIDI-Bridge/releases)
+
 ## Usage
 Pretty self-explanatory:
 
