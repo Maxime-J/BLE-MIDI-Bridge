@@ -1,0 +1,39 @@
+diff --git a/dialog/internal/dialog.js b/dialog/internal/dialog.js
+index a64d157a5b0410169af44ec9d3637f06ba19261e..320d7099ada471484bba19caacfcd2118103bd50 100644
+--- a/dialog/internal/dialog.js
++++ b/dialog/internal/dialog.js
+@@ -251,7 +251,7 @@ export class Dialog extends dialogBaseClass {
+             </h2>
+             <md-divider></md-divider>
+           </div>
+-          <div class="scroller">
++          <div class="scroller" part="scroller">
+             <div class="content">
+               <div class="top anchor"></div>
+               <slot name="content"></slot>
+diff --git a/menu/internal/menu.js b/menu/internal/menu.js
+index 0094772cc309071795c967f6e455b2eb742ea27f..ca6c739d942a6cacb5e42ac76d6c80b6b49ee15f 100644
+--- a/menu/internal/menu.js
++++ b/menu/internal/menu.js
+@@ -540,7 +540,7 @@ export class Menu extends LitElement {
+         style=${styleMap(this.menuPositionController.surfaceStyles)}
+         popover=${this.positioning === 'popover' ? 'manual' : nothing}>
+         ${this.renderElevation()}
+-        <div class="items">
++        <div class="items" part="items">
+           <div class="item-padding"> ${this.renderMenuItems()} </div>
+         </div>
+       </div>
+diff --git a/select/internal/select.js b/select/internal/select.js
+index 7d4e83250e295e7f2a9f09af0e749876d39712f7..deb96b36cdcd33e786d70c5cd3bf8587b943635f 100644
+--- a/select/internal/select.js
++++ b/select/internal/select.js
+@@ -372,7 +372,7 @@ export class Select extends selectBaseClass {
+         aria-label=${ariaLabel || nothing}
+         stay-open-on-focusout
+         part="menu"
+-        exportparts="focus-ring: menu-focus-ring"
++        exportparts="focus-ring: menu-focus-ring, items: menu-items"
+         anchor="field"
+         style=${styleMap({
+             '--__menu-min-width': `${this.selectWidth}px`,

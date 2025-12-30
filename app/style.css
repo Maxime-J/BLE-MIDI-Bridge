@@ -25,9 +25,28 @@
   --md-dialog-headline-font: var(--md-ref-typeface-plain);
   --md-dialog-headline-size: 20px;
   --md-list-container-color: none;
+}
+
+md-outlined-select,
+md-dialog {
   --scrollbar-width: 4px;
   --scrollbar-thumb-color: var(--md-sys-color-outline-variant);
-  --menu-max-height: 184px;
+}
+
+md-outlined-select::part(menu-items)::-webkit-scrollbar,
+md-dialog::part(scroller)::-webkit-scrollbar {
+  background-color: transparent;
+  width: var(--scrollbar-width);
+}
+
+md-outlined-select::part(menu-items)::-webkit-scrollbar-thumb,
+md-dialog::part(scroller)::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: calc(var(--scrollbar-width) / 2);
+}
+
+md-dialog md-linear-progress {
+  width: 100%;
 }
 
 body {
@@ -39,7 +58,12 @@ body {
   background-color: var(--md-sys-color-surface-container);
 }
 
-#connected-devices span, md-dialog [slot="headline"] {
+#midi-output::part(menu) {
+  max-height: 184px;
+}
+
+#connected-devices span,
+#devices-dialog [slot="headline"] {
   user-select: none;
 }
 
@@ -60,11 +84,8 @@ body {
   --md-fab-container-shape: 0;
 }
 
-md-dialog md-linear-progress {
-  width: 100%;
-}
-
-#connected-devices md-list-item.connected md-linear-progress, #connected-devices md-list-item:not(.connected) img {
+#connected-devices md-list-item.connected md-linear-progress,
+#connected-devices md-list-item:not(.connected) img {
   display: none;
 }
 
