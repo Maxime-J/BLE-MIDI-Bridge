@@ -75,7 +75,6 @@ function bleHandler() {
 
   const connect = async (resolveSelection) => {
     let device, deviceDOM;
-    const permanentId = selectedId;
 
     try {
       device = await navigator.bluetooth.requestDevice({
@@ -86,6 +85,7 @@ function bleHandler() {
 
       if (resolveSelection) resolveSelection();
 
+      const permanentId = selectedId;
       devices[permanentId] = device;
 
       deviceDOM = document.createElement('md-list-item');
