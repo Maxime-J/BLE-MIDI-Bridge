@@ -74,8 +74,11 @@ function bleHandler() {
   const availableIds = [];
 
   const connect = async (resolveSelection) => {
+    let device, deviceDOM;
+    const permanentId = selectedId;
+
     try {
-      const device = await navigator.bluetooth.requestDevice({
+      device = await navigator.bluetooth.requestDevice({
         filters: [
           { services: [MIDI_SERVICE_UUID] }
         ]
@@ -83,10 +86,9 @@ function bleHandler() {
 
       if (resolveSelection) resolveSelection();
 
-      const permanentId = selectedId;
       devices[permanentId] = device;
 
-      const deviceDOM = document.createElement('md-list-item');
+      deviceDOM = document.createElement('md-list-item');
       deviceDOM.innerHTML = `<span>${device.name}</span><md-linear-progress value="0.5"></md-linear-progress><img slot="end" src="assets/close.svg"/>`;
       const progress = deviceDOM.querySelector('md-linear-progress');
       connectedList.appendChild(deviceDOM);
@@ -112,16 +114,16 @@ function bleHandler() {
       deviceDOM.classList.add('connected');
       deviceDOM.querySelector('img').addEventListener('click', () => device.gatt.disconnect());
     } catch {
-      if (!devices[selectedId]) {
+      if (!device) {
         if (devicesDialog.open) devicesDialog.close();
         if (resolveSelection) resolveSelection();
+        return;
+      }
+
+      if (device.gatt.connected) {
+        device.gatt.disconnect();
       } else {
-        if (devices[selectedId].gatt.connected) {
-          devices[selectedId].gatt.disconnect();
-        } else {
-          connectedList.querySelector('md-list-item:not(.connected)').remove();
-          delete devices[selectedId];
-        }
+        device.ongattserverdisconnected();
       }
     }
   };
@@ -138,15 +140,16 @@ function bleHandler() {
 
   const handleDevices = (devicesAvailable) => {
     const excluded = [...availableIds, ...Object.keys(devices)];
+
     for (const device of devicesAvailable) {
-      if (!excluded.includes(device.deviceId)) {
-        const newDevice = document.createElement('md-list-item');
-        newDevice.type = 'button';
-        newDevice.textContent = device.deviceName;
-        newDevice.setAttribute('data-id', device.deviceId);
-        availableList.appendChild(newDevice);
-        availableIds.push(device.deviceId);
-      }
+      if (excluded.includes(device.deviceId)) continue;
+
+      const newDevice = document.createElement('md-list-item');
+      newDevice.type = 'button';
+      newDevice.textContent = device.deviceName;
+      newDevice.setAttribute('data-id', device.deviceId);
+      availableList.appendChild(newDevice);
+      availableIds.push(device.deviceId);
     }
   };
 
@@ -302,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })
 
-window.addEventListener('beforeunload', (e) => {
+addEventListener('beforeunload', (e) => {
   e.returnValue = false;
   exitHandler().then(electron.closeWindow);
-}, {once: true});
+}, { once: true });
