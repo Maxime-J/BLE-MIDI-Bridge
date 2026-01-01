@@ -1,13 +1,13 @@
-const path = require('node:path');
-const fs = require('node:fs');
-const https = require('node:https');
-const { pipeline } = require('node:stream');
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync
+} from 'node:fs';
+import { get } from 'node:https';
+import { join } from 'node:path';
+import { pipeline } from 'node:stream';
 
 const dest = 'app/assets';
-
-if (!fs.existsSync(dest)) {
-  fs.mkdirSync(dest);
-}
 
 const assets = [
   [
@@ -30,13 +30,13 @@ const assets = [
 
 function download(url, file) {
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
+    get(url, (res) => {
       if (res.statusCode != 200) {
         res.resume();
         reject();
       }
-      const filePath = path.join(dest, file);
-      const fileStream = fs.createWriteStream(filePath);
+      const filePath = join(dest, file);
+      const fileStream = createWriteStream(filePath);
       pipeline(res, fileStream, (err) => {
         if (err) {
           reject(err);
@@ -48,13 +48,8 @@ function download(url, file) {
   })
 }
 
+if (!existsSync(dest)) mkdirSync(dest);
 
-(async function(){
-  for (const [url, file] of assets) {
-    try {
-      await download(url, file);
-    } catch (err) {
-      throw err;
-    }
-  }
-})();
+for (const [url, file] of assets) {
+  await download(url, file);
+}

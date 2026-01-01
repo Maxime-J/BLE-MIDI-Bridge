@@ -6,10 +6,11 @@
   "author": "Maxime Jeunot",
   "license": "GPL-3.0-or-later",
   "private": true,
+  "type": "module",
   "scripts": {
     "start": "electron app",
-    "build-bridge": "rollup -c rollup.config.bridge.mjs",
-    "build-material": "rollup -c rollup.config.material.mjs",
+    "build-bridge": "rollup -c rollup.config.bridge.js",
+    "build-material": "rollup -c rollup.config.material.js",
     "download-assets": "node scripts/assets.js",
     "create-bundles": "node scripts/electron-packaging.js"
   },
