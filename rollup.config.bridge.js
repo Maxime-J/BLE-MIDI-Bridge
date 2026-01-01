@@ -1,7 +1,7 @@
 import terser from '@rollup/plugin-terser';
 
 export default {
-  input: 'build-src/bridge/bridge.js',
+  input: 'app-build/bridge/bridge.js',
   output: {
     file: 'app/bridge.js',
     format: 'iife',
