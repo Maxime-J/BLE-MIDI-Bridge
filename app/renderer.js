@@ -139,10 +139,10 @@ function bleHandler() {
   };
 
   const handleDevices = (devicesAvailable) => {
-    const excluded = [...availableIds, ...Object.keys(devices)];
+    const excluded = new Set([...availableIds, ...Object.keys(devices)]);
 
     for (const device of devicesAvailable) {
-      if (excluded.includes(device.deviceId)) continue;
+      if (excluded.has(device.deviceId)) continue;
 
       const newDevice = document.createElement('md-list-item');
       newDevice.type = 'button';
