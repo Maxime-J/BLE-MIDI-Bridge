@@ -4,7 +4,8 @@ import terser from '@rollup/plugin-terser';
 export default {
   input: 'app-build/material-web.js',
   output: {
-    file: 'app/material.js'
+    file: 'app/material.js',
+    format: 'iife'
   },
   plugins: [
     resolve(),
