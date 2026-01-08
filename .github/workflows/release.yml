@@ -9,17 +9,65 @@ env:
   RELEASE_FILE: ble-midi-bridge-windows-x64.zip
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
+  build-addon:
+    runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Install Corepack
+        run: npm install -g corepack --force
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+
+      - name: Install dependencies
+        working-directory: app-build/midi-out
+        run: yarn install --immutable
+
+      - name: Clone and patch libremidi
+        shell: bash
+        working-directory: app-build/midi-out
+        run: |
+          PATCH_FILE=$(ls *.patch)
+          COMMIT_HASH=$(cut -d '.' -f 2 <<< $PATCH_FILE)
+          git clone https://github.com/celtera/libremidi.git
+          cd libremidi
+          git checkout $COMMIT_HASH
+          git apply ../$PATCH_FILE
+
+      - name: Build addon
+        working-directory: app-build/midi-out
+        run: yarn cmake-js rebuild
+
+      - name: Upload addon
+        uses: actions/upload-artifact@v6
+        with:
+          name: midi-out
+          path: app-build/midi-out/build/Release/midi-out.node
+          retention-days: 1
+          compression-level: 0
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: build-addon
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download addon
+        uses: actions/download-artifact@v7
+        with:
+          name: midi-out
+          path: app
 
       - name: Enable Corepack
         run: corepack enable
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
 
