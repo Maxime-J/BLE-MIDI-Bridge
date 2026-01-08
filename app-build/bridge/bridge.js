@@ -2,11 +2,7 @@ import EXPECTED_STATUS_DATA from './midi-status-data';
 
 const messageBuffer = new Uint8Array(3);
 
-let output = { send: () => undefined };
-
-const setOutput = (midiOutput) => {
-  output = midiOutput;
-}
+let output = () => undefined;
 
 const handleInput = (e) => {
   const packet = new Uint8Array(e.target.value.buffer);
@@ -20,7 +16,7 @@ const handleInput = (e) => {
   let timestampLow = packet[1] & 127;
   let timestamp = (timestampHigh << 7) | timestampLow;
   let midiStatus = packet[2];
-  let time = 0.0;
+  let time = Number(process.hrtime.bigint());
   let index = 3;
 
   do {
@@ -31,7 +27,7 @@ const handleInput = (e) => {
       messageBuffer[i] = packet[index++];
     }
 
-    output.send(messageBuffer.subarray(0, messageSize), time);
+    output(messageSize, time);
 
     if (index == packet.length) break;
 
@@ -41,7 +37,7 @@ const handleInput = (e) => {
       timestampLow = newTimestampLow;
 
       const newTimestamp = (timestampHigh << 7) | timestampLow;
-      time = performance.now() + newTimestamp - timestamp;
+      time += (newTimestamp - timestamp) * 1000000;
       timestamp = newTimestamp;
 
       if ((packet[index] & 128) !== 0) midiStatus = packet[index++];
@@ -50,6 +46,9 @@ const handleInput = (e) => {
 }
 
 export default {
+  messageBuffer,
   handleInput,
-  setOutput,
+  set outputFunction(outputFunction) { 
+    output = outputFunction;
+  }
 };

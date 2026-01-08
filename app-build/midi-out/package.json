@@ -1,0 +1,15 @@
+{
+  "name": "midi-out",
+  "version": "1.0.0",
+  "private": true,
+  "cmake-js": {
+    "runtime": "electron",
+    "runtimeVersion": "36.5.0",
+    "arch": "x64"
+  },
+  "devDependencies": {
+    "cmake-js": "7.4.0",
+    "node-addon-api": "8.5.0"
+  },
+  "packageManager": "yarn@4.12.0"
+}

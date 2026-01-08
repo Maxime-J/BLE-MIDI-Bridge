@@ -1,0 +1,161 @@
+---
+ include/libremidi/backends/winmm/config.hpp   |  6 ----
+ include/libremidi/backends/winmm/midi_out.hpp | 12 +++++++
+ include/libremidi/backends/winmm/observer.hpp | 34 +++++++++++++------
+ 3 files changed, 35 insertions(+), 17 deletions(-)
+
+diff --git a/include/libremidi/backends/winmm/config.hpp b/include/libremidi/backends/winmm/config.hpp
+index 61863e0..fa9b486 100644
+--- a/include/libremidi/backends/winmm/config.hpp
++++ b/include/libremidi/backends/winmm/config.hpp
+@@ -17,15 +17,9 @@ struct winmm_output_configuration
+ {
+ };
+ 
+-struct poll_parameters
+-{
+-  std::function<void()> callback;
+-};
+-
+ struct winmm_observer_configuration
+ {
+   std::chrono::milliseconds poll_period{100};
+-  std::function<void(const poll_parameters&)> manual_poll;
+ };
+ 
+ }
+diff --git a/include/libremidi/backends/winmm/midi_out.hpp b/include/libremidi/backends/winmm/midi_out.hpp
+index 4b07a4a..d1b5a64 100644
+--- a/include/libremidi/backends/winmm/midi_out.hpp
++++ b/include/libremidi/backends/winmm/midi_out.hpp
+@@ -45,6 +45,8 @@ public:
+       return from_mmerr(result);
+     }
+ 
++    connected_ = true;
++
+     return stdx::error{};
+   }
+ 
+@@ -152,6 +154,16 @@ public:
+     return stdx::error{};
+   }
+ 
++  stdx::error send_packet(DWORD packet)
++  {
++    if (!connected_)
++      return std::errc::not_connected;
++
++    midiOutShortMsg(this->outHandle, packet);
++
++    return stdx::error{};
++  }
++
+ private:
+   HMIDIOUT outHandle; // Handle to Midi Output Device
+   std::vector<char> buffer;
+diff --git a/include/libremidi/backends/winmm/observer.hpp b/include/libremidi/backends/winmm/observer.hpp
+index 11d30b0..e36efd3 100644
+--- a/include/libremidi/backends/winmm/observer.hpp
++++ b/include/libremidi/backends/winmm/observer.hpp
+@@ -3,6 +3,9 @@
+ #include <libremidi/backends/winmm/helpers.hpp>
+ #include <libremidi/detail/observer.hpp>
+ 
++#include <mmreg.h>
++#include <mmsystem.h>
++
+ #include <thread>
+ 
+ namespace libremidi
+@@ -95,7 +98,7 @@ protected:
+     }
+   }
+ 
+-  input_port to_in_port_info(std::size_t index) const noexcept
++  std::optional<input_port> to_in_port_info(std::size_t index) const noexcept
+   {
+     MIDIINCAPS deviceCaps;
+     midiInGetDevCaps(index, &deviceCaps, sizeof(MIDIINCAPS));
+@@ -104,7 +107,7 @@ protected:
+     auto portName = rawName;
+     MakeUniqueInPortName(portName, index);
+ 
+-    return {
++    return input_port{
+         {.api = libremidi::API::WINDOWS_MM,
+          .client = 0,
+          .device
+@@ -116,16 +119,23 @@ protected:
+          .display_name = portName}};
+   }
+ 
+-  output_port to_out_port_info(std::size_t index) const noexcept
++  std::optional<output_port> to_out_port_info(std::size_t index) const noexcept
+   {
+     MIDIOUTCAPS deviceCaps;
+     midiOutGetDevCaps(index, &deviceCaps, sizeof(MIDIOUTCAPS));
+ 
++    // Exclude Microsoft GS Wavetable Synth
++    // like Chromium in midi_manager.cc
++    if (deviceCaps.wTechnology == MOD_SWSYNTH && deviceCaps.wMid == MM_MICROSOFT
++        && (deviceCaps.wPid == MM_MSFT_WDMAUDIO_MIDIOUT
++            || deviceCaps.wPid == MM_MSFT_GENERIC_MIDISYNTH))
++      return std::nullopt;
++
+     auto rawName = ConvertToUTF8(deviceCaps.szPname);
+     auto portName = rawName;
+     MakeUniqueOutPortName(portName, index);
+ 
+-    return {
++    return output_port{
+         {.api = libremidi::API::WINDOWS_MM,
+          .client = 0,
+          .device
+@@ -148,7 +158,9 @@ protected:
+       std::size_t nDevices = midiInGetNumDevs();
+       for (std::size_t i = 0; i < nDevices; ++i)
+       {
+-        portList.push_back(to_in_port_info(i));
++        auto port_info = to_in_port_info(i);
++        if (port_info)
++          portList.push_back(*port_info);
+       }
+     }
+     else
+@@ -156,7 +168,9 @@ protected:
+       std::size_t nDevices = midiOutGetNumDevs();
+       for (std::size_t i = 0; i < nDevices; ++i)
+       {
+-        portList.push_back(to_out_port_info(i));
++        auto port_info = to_out_port_info(i);
++        if (port_info)
++          portList.push_back(*port_info);
+       }
+     }
+     return portList;
+@@ -256,10 +270,11 @@ public:
+   explicit observer_manual(observer_configuration&& conf, winmm_observer_configuration&& apiconf)
+       : observer_winmm{std::move(conf), std::move(apiconf)}
+   {
+-    this->configuration.manual_poll({.callback = [this] { this->check_new_ports<true>(); }});
+   }
+ 
+   ~observer_manual() { }
++
++  void poll() { this->check_new_ports<true>(); }
+ };
+ }
+ namespace libremidi
+@@ -268,9 +283,6 @@ template <>
+ inline std::unique_ptr<observer_api> make<observer_winmm>(
+     libremidi::observer_configuration&& conf, libremidi::winmm_observer_configuration&& api)
+ {
+-  if (api.manual_poll)
+-    return std::make_unique<winmm::observer_manual>(std::move(conf), std::move(api));
+-  else
+-    return std::make_unique<winmm::observer_threaded>(std::move(conf), std::move(api));
++  return std::make_unique<winmm::observer_threaded>(std::move(conf), std::move(api));
+ }
+ }
+-- 

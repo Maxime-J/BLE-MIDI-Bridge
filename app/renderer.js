@@ -1,46 +1,58 @@
 function midiHandler() {
-  let midiAccess, midiOutput, selectDOM;
+  let selectDOM, portId;
 
-  const outputIds = [];
+  let currentPortIds = new Set();
 
-  const onChange = async () => {
+  const onOpened = () => {
+    midiOut.refreshPorts();
+    updateSelect();
+  };
+
+  const onChange = () => {
     if (selectDOM.value !== '') {
-      if (midiOutput) await midiOutput.close();
-      const outputId = selectDOM.value;
-      midiOutput = midiAccess.outputs.get(outputId);
-      await midiOutput.open();
-      bridge.setOutput(midiOutput);
+      portId = selectDOM.value;
+      midiOut.open(portId);
     }
   };
 
-  const portHandler = ({ port }) => {
-    if (port.type !== 'output') return;
-    const index = outputIds.indexOf(port.id);
-    if (index === -1) {
+  const updateSelect = () => {
+    const ports = midiOut.ports.toSorted((a, b) => a.name.localeCompare(b.name));
+
+    const portIds = new Set();
+
+    ports.forEach(({ port, name }, index) => {
+      portIds.add(port);
+
+      if (currentPortIds.has(port)) return;
+
       const newOption = document.createElement('md-select-option');
-      newOption.value = port.id;
-      newOption.setAttribute('data-id', port.id);
-      newOption.innerHTML = `<div>${port.name}</div>`;
-      selectDOM.appendChild(newOption);
-      outputIds.push(port.id);
-    } else {
-      if (port.state === 'disconnected') {
-        const oldOption = selectDOM.querySelector(`md-select-option[data-id="${port.id}"]`);
-        oldOption.remove();
-        outputIds.splice(index, 1);
+      newOption.value = port;
+      newOption.setAttribute('data-port', port);
+      newOption.innerHTML = `<div>${name}</div>`;
+
+      if (index < selectDOM.options.length) {
+        selectDOM.insertBefore(newOption, selectDOM.options[index]);
+      } else {
+        selectDOM.appendChild(newOption);
       }
-    }
+    });
+
+    currentPortIds.difference(portIds).forEach((id) => {
+      const oldOption = selectDOM.querySelector(`md-select-option[data-port="${id}"]`);
+      oldOption.remove();
+    });
+
+    currentPortIds = portIds;
   };
 
   const init = async (portName) => {
     selectDOM = document.getElementById('midi-output');
+    selectDOM.addEventListener('opened', onOpened);
     selectDOM.addEventListener('change', onChange);
 
-    midiAccess = await navigator.requestMIDIAccess();
-    midiAccess.outputs.forEach((output) => {
-      portHandler({ port: output });
-    });
-    midiAccess.onstatechange = portHandler;
+    window.selectDOM = selectDOM;
+
+    updateSelect();
 
     if (portName) {
       const index = selectDOM.options.findIndex((option) => option.textContent === portName);
@@ -51,10 +63,9 @@ function midiHandler() {
     }
   };
 
-  const exit = async () => {
-    if (midiOutput) {
-      await midiOutput.close();
-      return midiOutput.name;
+  const exit = () => {
+    if (portId) {
+      return selectDOM.querySelector(`md-select-option[data-port="${portId}"]`).textContent;
     }
   }
 
@@ -231,13 +242,18 @@ function bleHandler() {
   };
 }
 
-async function exitHandler() {
-  const output = await midi.exit();
+function exitHandler() {
+  const output = midi.exit();
   const devices = ble.exit();
+
+  bridge.output = () => undefined;
+  midiOut.cleanup();
 
   if (devices.ids.length > 0) {
     localStorage.setItem('setup', JSON.stringify({ output, devices }));
   }
+
+  electron.closeWindow();
 }
 
 function restore() {
@@ -295,6 +311,9 @@ function restore() {
   });
 }
 
+midiOut.init(bridge.messageBuffer);
+bridge.outputFunction = midiOut.send;
+
 document.addEventListener('DOMContentLoaded', () => {
   window.midi = midiHandler();
   window.ble = bleHandler();
@@ -303,9 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
     midi.init();
     ble.init();
   });
-})
+});
 
 addEventListener('beforeunload', (e) => {
   e.returnValue = false;
-  exitHandler().then(electron.closeWindow);
+  setTimeout(exitHandler, 0);
 }, { once: true });
