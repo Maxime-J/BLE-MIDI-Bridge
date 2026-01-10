@@ -3,7 +3,7 @@
 A simple portable app which permits to connect one or multiple Bluetooth devices and send their MIDI messages to a MIDI port.\
 In other terms, it's a way to use Bluetooth MIDI devices with any DAW or virtual instrument software.
 
-It's a one way communication, SysEx excluded, and it relies on web APIs, using Electron framework.
+It's a one way communication, SysEx excluded.
 
 Download: [Windows only](https://github.com/Maxime-J/BLE-MIDI-Bridge/releases/latest/download/ble-midi-bridge-windows-x64.zip)\
 (Other OSs shouldn't be needed, see Context below)
