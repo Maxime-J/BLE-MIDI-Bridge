@@ -2,7 +2,7 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
-  renameSync
+  unlinkSync
 } from 'node:fs';
 import { join } from 'node:path';
 import { createPackage } from '@electron/asar';
@@ -24,13 +24,12 @@ const bundles = await packager({
   out: dest,
   platform: 'win32',
   arch: 'x64',
-  appCopyright: `Copyright (C) 2024-2025 ${pkg.author}`
+  appCopyright: `Copyright (C) 2024-2026 ${pkg.author}`
 });
 
 for (const bundle of bundles) {
-  const oldLicense = join(bundle, 'LICENSE');
-  const newLicense = join(bundle, 'LICENSE.electron.txt');
-  renameSync(oldLicense, newLicense);
+  const electronLicense = join(bundle, 'LICENSE');
+  unlinkSync(electronLicense);
 
   copyFileSync(aboutFile, join(bundle, aboutFile));
 }
