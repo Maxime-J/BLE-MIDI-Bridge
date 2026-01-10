@@ -4,7 +4,7 @@
   "private": true,
   "cmake-js": {
     "runtime": "electron",
-    "runtimeVersion": "36.5.0",
+    "runtimeVersion": "39.2.7",
     "arch": "x64"
   },
   "devDependencies": {
