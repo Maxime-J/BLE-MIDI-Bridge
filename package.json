@@ -15,7 +15,6 @@
     "create-bundles": "node scripts/electron-packaging.js"
   },
   "devDependencies": {
-    "@electron/asar": "4.0.1",
     "@electron/packager": "19.0.1",
     "@material/web": "2.4.1",
     "@rollup/plugin-node-resolve": "16.0.3",

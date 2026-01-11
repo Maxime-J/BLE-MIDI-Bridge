@@ -1,11 +1,5 @@
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  unlinkSync
-} from 'node:fs';
+import { copyFileSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
-import { createPackage } from '@electron/asar';
 import { packager } from '@electron/packager';
 
 import pkg from '../package.json' with { type: 'json' };
@@ -13,14 +7,9 @@ import pkg from '../package.json' with { type: 'json' };
 const dest = 'bundles';
 const aboutFile = 'about.txt';
 
-if (!existsSync(dest)) mkdirSync(dest);
-
-const asarFile = join(dest, 'app.asar');
-await createPackage('app', asarFile);
-
 const bundles = await packager({
-  dir: '.',
-  prebuiltAsar: asarFile,
+  dir: 'app',
+  asar: { unpack: 'midi-out.node' },
   out: dest,
   platform: 'win32',
   arch: 'x64',
