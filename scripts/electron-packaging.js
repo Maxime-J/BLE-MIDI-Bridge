@@ -13,6 +13,7 @@ const bundles = await packager({
   out: dest,
   platform: 'win32',
   arch: 'x64',
+  icon: 'app.ico',
   appCopyright: `Copyright (C) 2024-2026 ${pkg.author}`
 });
 
