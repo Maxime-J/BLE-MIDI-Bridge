@@ -246,7 +246,7 @@ function exitHandler() {
   const output = midi.exit();
   const devices = ble.exit();
 
-  bridge.output = () => undefined;
+  bridge.outputFunction = () => undefined;
   midiOut.cleanup();
 
   if (devices.ids.length > 0) {
