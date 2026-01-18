@@ -182,7 +182,7 @@ function bleHandler() {
       });
 
       // bluetooth.requestDevice requires transient activation, which remains for 5s in Chromium:
-      // https://source.chromium.org/chromium/chromium/src/+/refs/tags/142.0.7444.235:third_party/blink/public/common/frame/user_activation_state.h;l=23
+      // https://source.chromium.org/chromium/chromium/src/+/refs/tags/144.0.7559.60:third_party/blink/public/common/frame/user_activation_state.h;l=23
       //
       // It should be enough to discover and select all devices.
       // Note that a tricky workaround would be possible with Electron API.

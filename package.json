@@ -19,7 +19,7 @@
     "@material/web": "2.4.1",
     "@rollup/plugin-node-resolve": "16.0.3",
     "@rollup/plugin-terser": "0.4.4",
-    "electron": "39.2.7",
+    "electron": "40.0.0",
     "rollup": "4.55.1"
   },
   "resolutions": {
