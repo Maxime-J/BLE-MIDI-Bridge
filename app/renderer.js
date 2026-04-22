@@ -119,12 +119,19 @@ function bleHandler() {
       characteristic.addEventListener('characteristicvaluechanged', bridge.handleInput);
       progress.value = '0.9';
 
+      if (!characteristic.properties.notify && !characteristic.properties.indicate) {
+        throw new Error('Characteristic does not support notify/indicate');
+      }
+
       await characteristic.startNotifications();
       progress.value = '1';
 
       deviceDOM.classList.add('connected');
       deviceDOM.querySelector('img').addEventListener('click', () => device.gatt.disconnect());
-    } catch {
+    } catch (err) {
+
+      alert(`Bluetooth MIDI connection failed: ${err?.message ?? err}`);
+
       if (!device) {
         if (devicesDialog.open) devicesDialog.close();
         if (resolveSelection) resolveSelection();
