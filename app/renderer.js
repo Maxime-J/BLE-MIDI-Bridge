@@ -129,7 +129,6 @@ function bleHandler() {
       deviceDOM.classList.add('connected');
       deviceDOM.querySelector('img').addEventListener('click', () => device.gatt.disconnect());
     } catch (err) {
-
       alert(`Bluetooth MIDI connection failed: ${err?.message ?? err}`);
 
       if (!device) {
