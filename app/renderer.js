@@ -84,7 +84,26 @@ function bleHandler() {
   const devices = {};
   const availableIds = [];
 
+  // System Bluetooth state can't be accessed
+  // and bluetooth.requestDevice throws the same error on cancel and if bluetooth is disabled.
+  // A toast is then shown if the connect process exits very quickly.
+
+  const showBluetoothToast = () => {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = 'Bluetooth looks disabled';
+
+    let i = 0;
+    toast.addEventListener('animationend', () => {
+      if (++i === 2) toast.remove();
+    });
+
+    document.body.appendChild(toast);
+  };
+
   const connect = async (resolveSelection) => {
+    const startedAt = Date.now();
+
     let device, deviceDOM;
 
     try {
@@ -126,7 +145,10 @@ function bleHandler() {
       deviceDOM.querySelector('img').addEventListener('click', () => device.gatt.disconnect());
     } catch {
       if (!device) {
-        if (devicesDialog.open) devicesDialog.close();
+        if (devicesDialog.open) {
+          if ((Date.now() - startedAt) < 100) showBluetoothToast();
+          devicesDialog.close();
+        }
         if (resolveSelection) resolveSelection();
         return;
       }

@@ -126,3 +126,30 @@ body.old-version #add-device {
   bottom: 20px;
   transition: bottom .2s;
 }
+
+.toast {
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+  background-color: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  padding: 10px;
+  border-radius: 5px;
+  font-family: var(--md-ref-typeface-plain);
+  font-size: 14px;
+  pointer-events: none;
+  animation: fadeIn .2s forwards, fadeIn .2s forwards reverse 2.2s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
