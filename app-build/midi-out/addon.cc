@@ -222,7 +222,7 @@ void MidiOutput::ProcessMessages(std::stop_token stoken) {
       if (wait_ns > 0) {
         lock.unlock();
         while (uv_hrtime() < target) {
-          Sleep(0);
+          YieldProcessor();
         }
         lock.lock();
         message = message_queue_.top();
