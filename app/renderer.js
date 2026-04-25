@@ -306,7 +306,7 @@ function restore() {
 
     restoreDialog.setAttribute('quick', '');
     restoreDialog.setAttribute('open', '');
-    restoreDialog.innerHTML = `<div slot="content">Restore last used setup?<div id="last-setup">${setupHTML}</div></div><div slot="actions"></div>`;
+    restoreDialog.innerHTML = `<div slot="content" tabindex="-1" autofocus style="outline: none">Restore last used setup?<div id="last-setup">${setupHTML}</div></div><div slot="actions"></div>`;
 
     restoreButton.textContent = 'Restore';
     discardButton.textContent = 'Discard';
@@ -329,10 +329,7 @@ function restore() {
       exitRestore();
     }, { once: true });
 
-    // Prevent native dialog focus on first button
-    restoreDialog.addEventListener('opened', () => {
-      restoreDialog.lastChild.append(discardButton, restoreButton);
-    });
+    restoreDialog.lastChild.append(discardButton, restoreButton);
 
     restoreDialog.addEventListener('cancel', (e) => e.preventDefault());
 
