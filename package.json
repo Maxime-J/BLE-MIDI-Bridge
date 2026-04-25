@@ -15,15 +15,20 @@
     "create-bundles": "node scripts/electron-packaging.js"
   },
   "devDependencies": {
-    "@electron/packager": "19.0.1",
+    "@electron/packager": "20.0.0",
     "@material/web": "2.4.1",
     "@rollup/plugin-node-resolve": "16.0.3",
-    "@rollup/plugin-terser": "0.4.4",
-    "electron": "40.0.0",
-    "rollup": "4.55.1"
+    "@rollup/plugin-terser": "1.0.0",
+    "electron": "41.3.0",
+    "rollup": "4.60.2"
   },
   "resolutions": {
     "@material/web": "patch:@material/web@npm%3A2.4.1#~/.yarn/patches/@material-web-npm-2.4.1-7767d7234e.patch"
   },
-  "packageManager": "yarn@4.12.0"
+  "dependenciesMeta": {
+    "electron": {
+      "built": true
+    }
+  },
+  "packageManager": "yarn@4.14.1"
 }
