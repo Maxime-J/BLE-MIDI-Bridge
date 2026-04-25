@@ -14,11 +14,37 @@ const selectBluetoothDevice = (id) => {
   bluetoothSelectCallback = undefined;
 };
 
+const initSplash = (parentWin) => {
+  const win = new BrowserWindow({
+    width: 100,
+    height: 100,
+    backgroundColor: '#006398',
+    resizable: false,
+    frame: false,
+    show: false,
+    parent: parentWin,
+  });
+
+  const promise = new Promise((res) => {
+    win.on('ready-to-show', () => {
+      win.show();
+      setTimeout(res, 1000);
+    });
+  });
+
+  win.setIgnoreMouseEvents(true);
+
+  win.loadFile('app.ico');
+
+  return { win, promise };
+};
+
 const init = () => {
   const win = new BrowserWindow({
     width: 400,
     height: 385,
     resizable: false,
+    show: false,
     webPreferences: {
       // Use native addon in the same context for performance
       // Trusted content only
@@ -28,7 +54,19 @@ const init = () => {
     }
   });
 
-  win.loadFile('index.html');
+  let splash;
+  const splashTimeout = setTimeout(() => {
+    splash = initSplash(win);
+  }, 500);
+
+  win.once('ready-to-show', async () => {
+    clearTimeout(splashTimeout);
+    if (splash) {
+      await splash.promise;
+      splash.win.close();
+    }
+    win.show();
+  });
 
   win.webContents.on('will-navigate', (event) => {
     event.preventDefault();
@@ -70,6 +108,8 @@ const init = () => {
       win.webContents.send('ble-devices', devices);
     }
   });
+
+  win.loadFile('index.html');
 }
 
 ipcMain.on('ble-device-selected', (event, deviceId) => {
