@@ -14,50 +14,53 @@ const selectBluetoothDevice = (id) => {
   bluetoothSelectCallback = undefined;
 };
 
-const createWindow = () => {
-  const mainWindow = new BrowserWindow({
+const init = () => {
+  const win = new BrowserWindow({
     width: 400,
     height: 385,
     resizable: false,
     webPreferences: {
+      // Use native addon in the same context for performance
+      // Trusted content only
       nodeIntegration: true,
       contextIsolation: false,
       preload: join(__dirname, 'preload.js')
     }
   });
 
-  mainWindow.loadFile('index.html');
+  win.loadFile('index.html');
 
-  mainWindow.webContents.on('will-navigate', (event) => {
+  win.webContents.on('will-navigate', (event) => {
     event.preventDefault();
   });
 
-  mainWindow.webContents.on('select-bluetooth-device', (event, devices, callback) => {
+  win.webContents.on('select-bluetooth-device', (event, devices, callback) => {
     event.preventDefault();
     bluetoothSelectCallback = callback;
     if (JSON.stringify(devices) !== JSON.stringify(bluetoothDevices)) {
       bluetoothDevices = devices;
-      mainWindow.webContents.send('ble-devices', devices);
+      win.webContents.send('ble-devices', devices);
     }
-  });
-
-  ipcMain.on('ble-device-selected', (event, deviceId) => {
-    selectBluetoothDevice(deviceId);
-  });
-
-  ipcMain.on('cancel-bluetooth', () => {
-    if (typeof bluetoothSelectCallback === 'function') {
-      selectBluetoothDevice('');
-    }
-  });
-
-  ipcMain.on('close-window', () => {
-    mainWindow.close();
   });
 }
 
+ipcMain.on('ble-device-selected', (event, deviceId) => {
+  selectBluetoothDevice(deviceId);
+});
+
+ipcMain.on('cancel-bluetooth', () => {
+  if (typeof bluetoothSelectCallback === 'function') {
+    selectBluetoothDevice('');
+  }
+});
+
+ipcMain.on('close-window', ({ sender }) => {
+  const win = BrowserWindow.fromWebContents(sender);
+  win.close();
+});
+
 app.whenReady().then(() => {
-  createWindow();
+  init();
 });
 
 app.on('window-all-closed', () => {

@@ -185,7 +185,7 @@ function bleHandler() {
       // https://source.chromium.org/chromium/chromium/src/+/refs/tags/146.0.7680.188:third_party/blink/public/common/frame/user_activation_state.h;l=23
       //
       // It should be enough to discover and select all devices.
-      // Note that a tricky workaround would be possible with Electron API.
+      // A tricky workaround would otherwise be possible with Electron API.
 
       while (devicesIds.length > 0 && navigator.userActivation.isActive) {
         lookupId = devicesIds.shift();
@@ -243,17 +243,18 @@ function bleHandler() {
 }
 
 function exitHandler() {
-  const output = midi.exit();
-  const devices = ble.exit();
+  try {
+    const output = midi.exit();
+    const devices = ble.exit();
 
-  bridge.outputFunction = () => undefined;
-  midiOut.cleanup();
-
-  if (devices.ids.length > 0) {
-    localStorage.setItem('setup', JSON.stringify({ output, devices }));
+    if (devices.ids.length > 0) {
+      localStorage.setItem('setup', JSON.stringify({ output, devices }));
+    }
+  } finally {
+    bridge.outputFunction = () => undefined;
+    midiOut.cleanup();
+    electron.closeWindow();
   }
-
-  electron.closeWindow();
 }
 
 function restore() {
