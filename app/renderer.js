@@ -329,3 +329,18 @@ addEventListener('beforeunload', (e) => {
   e.returnValue = false;
   setTimeout(exitHandler, 0);
 }, { once: true });
+
+electron.onNewVersion(() => {
+  const versionPrompt = document.createElement('div');
+  versionPrompt.id = 'new-version';
+  versionPrompt.textContent = 'New version available';
+
+  versionPrompt.addEventListener('click', () => {
+    electron.openExternal('https://github.com/Maxime-J/BLE-MIDI-Bridge/releases');
+    versionPrompt.remove();
+    document.body.classList.remove('old-version');
+  }, { once: true });
+
+  document.body.appendChild(versionPrompt);
+  document.body.classList.add('old-version');
+});

@@ -100,3 +100,29 @@ body {
 #last-setup > span span {
   font-weight: 600;
 }
+
+#new-version {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 20px;
+  background-color: var(--md-sys-color-primary);
+  color: white;
+  text-align: center;
+  font-size: 15px;
+  cursor: pointer;
+  user-select: none;
+  animation: version .2s;
+}
+
+@keyframes version {
+  from {
+    height: 0;
+  }
+}
+
+body.old-version #add-device {
+  bottom: 20px;
+  transition: bottom .2s;
+}

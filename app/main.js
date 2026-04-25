@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
 const { join, dirname } = require('node:path');
 
 const userDataPath = (app.isPackaged) ? join(dirname(app.getPath('exe')), 'data') : join(__dirname, '../data');
@@ -34,6 +34,34 @@ const init = () => {
     event.preventDefault();
   });
 
+  win.webContents.on('did-finish-load', async () => {
+    if (!app.isPackaged) return;
+
+    const version = app.getVersion();
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+
+    try {
+      const response = await fetch('https://api.github.com/repos/Maxime-J/BLE-MIDI-Bridge/releases/latest', {
+        headers: {
+          accept: 'application/vnd.github+json',
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) return;
+
+      const { name } = await response.json();
+
+      if (name !== `v${version}`) win.webContents.send('new-version');
+    } catch {
+      // Ignore
+    } finally {
+      clearTimeout(timeout);
+    }
+  });
+
   win.webContents.on('select-bluetooth-device', (event, devices, callback) => {
     event.preventDefault();
     bluetoothSelectCallback = callback;
@@ -52,6 +80,10 @@ ipcMain.on('cancel-bluetooth', () => {
   if (typeof bluetoothSelectCallback === 'function') {
     selectBluetoothDevice('');
   }
+});
+
+ipcMain.on('open-url', (event, url) => {
+  shell.openExternal(url);
 });
 
 ipcMain.on('close-window', ({ sender }) => {
