@@ -19,6 +19,10 @@ const assets = [
     'close.svg'
   ],
   [
+    'https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/error/default/24px.svg',
+    'error.svg'
+  ],
+  [
     'https://raw.githubusercontent.com/fontsource/font-files/main/fonts/variable/noto-sans/files/noto-sans-latin-wght-normal.woff2',
     'noto-sans-latin.woff2'
   ],

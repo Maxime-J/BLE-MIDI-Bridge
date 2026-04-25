@@ -85,8 +85,31 @@ body {
 }
 
 #connected-devices md-list-item.connected md-linear-progress,
-#connected-devices md-list-item:not(.connected) img {
+#connected-devices md-list-item.failed md-linear-progress,
+#connected-devices md-list-item:not(.connected) img,
+#connected-devices md-list-item:not(.failed) .device-error {
   display: none;
+}
+
+#connected-devices md-list-item.failed .device-error {
+  display: flex;
+  align-items: center;
+}
+
+#connected-devices md-list-item.failed .device-error svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  fill: #b12020;
+}
+
+#connected-devices md-list-item.failed .device-error span {
+  margin-left: 5px;
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1;
+  user-select: all;
+  cursor: default;
 }
 
 #last-setup {

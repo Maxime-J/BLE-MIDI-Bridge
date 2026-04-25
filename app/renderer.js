@@ -104,7 +104,7 @@ function bleHandler() {
   const connect = async (resolveSelection) => {
     const startedAt = Date.now();
 
-    let device, deviceDOM;
+    let device, deviceDOM, permanentId;
 
     try {
       device = await navigator.bluetooth.requestDevice({
@@ -115,18 +115,13 @@ function bleHandler() {
 
       if (resolveSelection) resolveSelection();
 
-      const permanentId = selectedId;
+      permanentId = selectedId;
       devices[permanentId] = device;
 
       deviceDOM = document.createElement('md-list-item');
       deviceDOM.innerHTML = `<span>${device.name}</span><md-linear-progress value="0.5"></md-linear-progress><img slot="end" src="assets/close.svg"/>`;
       const progress = deviceDOM.querySelector('md-linear-progress');
       connectedList.appendChild(deviceDOM);
-
-      device.ongattserverdisconnected = () => {
-        deviceDOM.remove();
-        delete devices[permanentId];
-      };
 
       const server = await device.gatt.connect();
       progress.value = '0.7';
@@ -141,9 +136,14 @@ function bleHandler() {
       await characteristic.startNotifications();
       progress.value = '1';
 
+      device.ongattserverdisconnected = () => {
+        deviceDOM.remove();
+        delete devices[permanentId];
+      };
+
       deviceDOM.classList.add('connected');
       deviceDOM.querySelector('img').addEventListener('click', () => device.gatt.disconnect());
-    } catch {
+    } catch (err) {
       if (!device) {
         if (devicesDialog.open) {
           if ((Date.now() - startedAt) < 100) showBluetoothToast();
@@ -153,11 +153,14 @@ function bleHandler() {
         return;
       }
 
-      if (device.gatt.connected) {
-        device.gatt.disconnect();
-      } else {
-        device.ongattserverdisconnected();
-      }
+      if (device.gatt.connected) device.gatt.disconnect();
+      delete devices[permanentId];
+
+      const error = document.createElement('div');
+      error.classList.add('device-error');
+      error.innerHTML = `<svg><use href="assets/error.svg" width="100%" height="100%"/></svg><span>${err.message}</span>`;
+      deviceDOM.appendChild(error);
+      deviceDOM.classList.add('failed');
     }
   };
 
@@ -238,6 +241,9 @@ function bleHandler() {
 
     document.getElementById('add-device').addEventListener('click', () => {
       devicesDialog.show();
+      setTimeout(() => {
+        connectedList.querySelectorAll(':scope > .failed').forEach(elem => elem.remove());
+      }, 0);
     });
   };
 
